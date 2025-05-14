@@ -1,150 +1,106 @@
-const API_BASE = "http://localhost:8000";
+//const API = "http://localhost:8000";
+const API = "";   // “/stories/…” and “/prompt/…” become relative to port 80
 
-// Helpers
-async function fetchJSON(url, method = "GET", body = null) {
-  const options = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-  if (body) options.body = JSON.stringify(body);
-  const res = await fetch(API_BASE + url, options);
-  if (!res.ok) throw new Error(`API Error: ${res.status}`);
-  return await res.json();
+async function fetchJSON(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts
+  });
+  if (!res.ok) throw new Error(res.statusText);
+  return res.json();
 }
 
-// Story API functions
 const StoryAPI = {
   getAll: () => fetchJSON("/stories/"),
-  add: (story) => fetchJSON("/stories/", "POST", story),
-  analyze: (id) => fetchJSON(`/stories/${id}/analyze`, "POST"),
-  delete: (id) => fetchJSON(`/stories/${id}`, "DELETE"),
-  update: (id, story) => fetchJSON(`/stories/${id}`, "PUT", story),
-  getPrompt: () => fetchJSON("/prompt/"),
+  add:  s => fetchJSON("/stories/", { method: "POST", body: JSON.stringify(s) }),
+  analyze: id => fetchJSON(`/stories/${id}/analyze`, { method: "POST" }),
+  getPrompt: () => fetchJSON("/prompt/")
 };
 
-// UI Manager
 const UI = {
-  init: function() {
-    this.cacheElements();
-    this.bindEvents();
-    this.loadStories();
-    this.loadPrompt();
+  init() {
+    this.cache(); this.bind(); this.loadStories(); this.loadPrompt();
   },
-  cacheElements: function() {
+  cache() {
     this.views = {
-      dashboard: document.getElementById("stories-dashboard"),
-      addStory: document.getElementById("add-story"),
-      refineStory: document.getElementById("refine-story"),
-      storyDetail: document.getElementById("story-detail"),
+      dash:   document.getElementById("stories-dashboard"),
+      add:    document.getElementById("add-story"),
+      refine: document.getElementById("refine-story")
     };
-    this.navLinks = {
+    this.grid      = document.getElementById("stories-grid");
+    this.promptC   = document.getElementById("prompt-card");
+    this.promptT   = document.getElementById("prompt-text");
+    this.form      = document.getElementById("story-form");
+    this.nav       = {
       stories: document.getElementById("nav-stories"),
-      add: document.getElementById("nav-add","nav-add-btn"),
-      refine: document.getElementById("nav-refine"),
+      add:     document.getElementById("nav-add"),
+      refine:  document.getElementById("nav-refine"),
+      addBtn:  document.getElementById("nav-add-btn")
     };
-    this.mobileLinks = {
-      stories: document.getElementById("mobile-nav-stories"),
-      add: document.getElementById("mobile-nav-add"),
-      refine: document.getElementById("mobile-nav-refine"),
+    this.btn = {
+      publish:    document.getElementById("publish-story"),
+      saveDraft:  document.getElementById("save-draft")
     };
-    this.promptCard = document.getElementById("prompt-card");
-    this.promptText = document.getElementById("prompt-text");
-
-    this.storyForm = document.getElementById("story-form");
-    this.publishButton = document.getElementById("publish-story");
-    this.saveDraftButton = document.getElementById("save-draft");
-    this.dashboardContainer = document.getElementById("stories-grid");
   },
-  bindEvents: function() {
-    this.navLinks.stories.addEventListener("click", (e) => { e.preventDefault(); this.showView("dashboard"); });
-    this.navLinks.add.addEventListener("click", (e) => { e.preventDefault(); this.showView("addStory"); });
-    this.navLinks.refine.add.addEventListener("click", (e) => { e.preventDefault(); this.showView("refineStory"); });
-
-    this.mobileLinks.stories.addEventListener("click", (e) => { e.preventDefault(); this.showView("dashboard"); });
-    this.mobileLinks.add.addEventListener("click", (e) => { e.preventDefault(); this.showView("addStory"); });
-    this.mobileLinks.refine.add.addEventListener("click", (e) => { e.preventDefault(); this.showView("refineStory"); });
-
-    this.publishButton.addEventListener("click", () => this.saveStory(false));
-    this.saveDraftButton.addEventListener("click", () => this.saveStory(true));
+  bind() {
+    this.nav.stories.onclick = e => { e.preventDefault(); this.show("dash"); };
+    this.nav.add.onclick     = e => { e.preventDefault(); this.show("add"); };
+    this.nav.addBtn.onclick  = () => this.show("add");
+    this.nav.refine.onclick  = e => { e.preventDefault(); this.show("refine"); };
+    this.btn.publish.onclick = () => this.save(false);
+    this.btn.saveDraft.onclick = () => this.save(true);
   },
-  showView: function(viewName) {
-    Object.values(this.views).forEach(v => v.classList.add("hidden"));
-    this.views[viewName].classList.remove("hidden");
+  show(v) {
+    Object.values(this.views).forEach(s => s.classList.add("hidden"));
+    this.views[v].classList.remove("hidden");
   },
-  loadStories: async function() {
+  async loadStories() {
     try {
-      const stories = await StoryAPI.getAll();
-      this.dashboardContainer.innerHTML = "";
-      if (stories.length === 0) {
-        this.dashboardContainer.innerHTML = `<div class="text-center text-gray-500">No stories yet.</div>`;
-        return;
-      }
-      stories.forEach(story => {
-        const card = document.createElement("div");
-        card.className = "story-card bg-white p-4 rounded shadow cursor-pointer";
-        card.innerHTML = `
-          <h2 class="text-lg font-bold">${story.title}</h2>
-          <p class="text-sm text-gray-600">${new Date(story.date).toLocaleDateString()}</p>
-          <p class="mt-2">${story.content.slice(0, 100)}...</p>
-          <button class="mt-2 text-blue-500 hover:underline" data-id="${story.id}" data-action="analyze">Analyze</button>
-        `;
-        card.querySelector("[data-action='analyze']").addEventListener("click", async (e) => {
-          e.stopPropagation();
-          await this.analyzeStory(story.id);
-        });
-        this.dashboardContainer.appendChild(card);
-      });
-    } catch (err) {
-      console.error("Failed to load stories:", err);
-    }
+      const arr = await StoryAPI.getAll();
+      this.grid.innerHTML = arr.length
+        ? arr.map(s=>`
+            <div class="p-4 bg-white rounded shadow">
+              <h3 class="font-semibold">${s.title}</h3>
+              <p class="text-sm text-gray-500">${new Date(s.date).toLocaleDateString()}</p>
+              <p class="mt-2">${s.content.slice(0,100)}…</p>
+              <button class="mt-2 text-blue-500" onclick="UI.analyze(${s.id})">Analyze</button>
+            </div>
+          `).join("")
+        : `<div class="text-gray-500">No stories yet.</div>`;
+    } catch(e){ console.error(e) }
   },
-  saveStory: async function(isDraft) {
-    const title = this.storyForm.title.value;
-    const date = this.storyForm.date.value;
-    const content = this.storyForm.content.value;
-    const tags = this.storyForm.tags.value;
-
-    if (!title || !content) {
-      alert("Title and Content are required!");
-      return;
+  async save(isDraft) {
+    const f = this.form;
+    const data = {
+      title: f.title.value,
+      date:  f.date.value||new Date().toISOString().slice(0,10),
+      content: f.content.value,
+      tags: f.tags.value,
+      emotional_impact: "medium",
+      status: isDraft?"draft":"published"
+    };
+    if (!data.title || !data.content) {
+      return alert("Title & content required");
     }
     try {
-      await StoryAPI.add({
-        title,
-        date,
-        content,
-        tags,
-        emotional_impact: "medium", // default for now
-        status: isDraft ? "draft" : "published",
-      });
-      alert(isDraft ? "Draft saved!" : "Story published!");
-      this.showView("dashboard");
+      await StoryAPI.add(data);
+      this.show("dash");
       this.loadStories();
-    } catch (err) {
-      console.error("Failed to save story:", err);
-    }
+    } catch(e){ console.error(e) }
   },
-  analyzeStory: async function(storyId) {
+  async analyze(id) {
     try {
-      const result = await StoryAPI.analyze(storyId);
-      alert("AI Analysis: " + result.analysis);
-    } catch (err) {
-      console.error("Failed to analyze story:", err);
-    }
+      const { analysis } = await StoryAPI.analyze(id);
+      alert("AI says:\n\n" + analysis);
+    } catch(e){ console.error(e) }
   },
-  loadPrompt: async function() {
+  async loadPrompt() {
     try {
-      const prompt = await StoryAPI.getPrompt();
-      this.promptText.innerText = `${prompt.superlative} ${prompt.subject}`;
-    } catch (err) {
-      console.error("Failed to load prompt:", err);
-    }
-  },
+      const { prompt } = await StoryAPI.getPrompt();
+      this.promptT.textContent = prompt;
+      this.promptC.classList.remove("hidden");
+    } catch(e){ console.error(e) }
+  }
 };
 
-// Initialize
-document.addEventListener("DOMContentLoaded", () => {
-  UI.init();
-});
+window.onload = () => UI.init();

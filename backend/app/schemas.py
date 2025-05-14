@@ -1,18 +1,20 @@
-from pydantic import BaseModel
 from typing import Optional
+from pydantic import BaseModel
 
-class StoryCreate(BaseModel):
+class StoryBase(BaseModel):
     title: str
     date: str
     content: str
     tags: Optional[str] = ""
     emotional_impact: Optional[str] = "medium"
 
-class StoryUpdate(StoryCreate):
+class StoryCreate(StoryBase):
     pass
 
-class StoryOut(StoryCreate):
-    id: int
+class StoryUpdate(StoryBase):
+    pass
 
+class StoryOut(StoryBase):
+    id: int
     class Config:
         orm_mode = True

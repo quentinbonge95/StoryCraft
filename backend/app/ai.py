@@ -1,17 +1,18 @@
-import httpx
+import os, httpx
 
-OLLAMA_URL = "http://ollama:11434/api/generate"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434/api/generate")
 
-def analyze_story(content: str):
-    prompt = f"Analyze this story:\n\n{content}\n\nIdentify emotional impact, 5-second moment, and improvement suggestions."
-    payload = {
-        "model": "llama3",  # Adjust model if different
-        "prompt": prompt,
-        "stream": False
-    }
+def analyze_story(content: str) -> str:
+    prompt = (
+        "Analyze this story:\n\n"
+        f"{content}\n\n"
+        "Identify emotional impact, 5-second moment, and improvement suggestions."
+    )
+    payload = {"model": "llama3", "prompt": prompt, "stream": False}
     try:
-        response = httpx.post(OLLAMA_URL, json=payload, timeout=60)
-        response.raise_for_status()
-        return response.json().get("response", "")
+        r = httpx.post(OLLAMA_URL, json=payload, timeout=60)
+        r.raise_for_status()
+        # Ollama returns { "response": "..." }
+        return r.json().get("response", "")
     except Exception as e:
-        return f"AI Analysis failed: {str(e)}"
+        return f"AI Analysis failed: {e}"

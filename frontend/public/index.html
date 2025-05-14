@@ -2,96 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Storyworthy - Your Life in Stories</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Storyworthy</title>
   <link href="/output.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/all.min.css">
-  <script src="js/app.js" defer></script>
+  <link href="/css/all.min.css" rel="stylesheet">
+  <script src="/js/app.js" defer></script>
 </head>
+<body class="min-h-screen bg-gray-50">
 
-<body class="min-h-screen gradient-bg font-sans">
-
-  <!-- Navbar -->
   <nav class="bg-white shadow">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="flex justify-between h-16">
-        <div class="flex">
-          <div class="flex items-center">
-            <i class="fas fa-book-open text-blue-500 text-2xl mr-2"></i>
-            <span class="text-xl font-bold text-gray-800">Storyworthy</span>
-          </div>
-          <div class="hidden sm:flex sm:space-x-8 ml-10">
-            <a href="#" id="nav-stories" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">My Stories</a>
-            <a href="#" id="nav-add" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">Add Story</a>
-            <a href="#" id="nav-refine" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">Refine Story</a>
-          </div>
-        </div>
-      </div>
+    <div class="max-w-4xl mx-auto px-4 py-3 flex space-x-4">
+      <button id="nav-stories" class="font-semibold">My Stories</button>
+      <button id="nav-add"     class="font-semibold">Add Story</button>
+      <button id="nav-refine"  class="font-semibold">Refine</button>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-
-    <!-- Prompt Card -->
-    <div id="prompt-card" class="p-4 mb-6 bg-yellow-100 rounded shadow hidden">
-      <strong>Prompt:</strong> <span id="prompt-text">Loading...</span>
+  <main class="max-w-4xl mx-auto p-4 space-y-6">
+    <!-- Prompt -->
+    <div id="prompt-card" class="p-4 bg-yellow-100 rounded hidden">
+      <strong>Prompt:</strong> <span id="prompt-text">Loading…</span>
     </div>
 
-    <!-- Dashboard View -->
-    <div id="stories-dashboard" class="">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Your Stories</h1>
-        <button id="nav-add-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium">+ Add Story</button>
+    <!-- Dashboard -->
+    <section id="stories-dashboard">
+      <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl">Your Stories</h1>
+        <button id="nav-add-btn" class="bg-blue-600 text-white px-3 py-1 rounded">+ Add</button>
       </div>
-      <div id="stories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </div>
+      <div id="stories-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
 
-    <!-- Add Story View -->
-    <div id="add-story" class="hidden">
-      <form id="story-form" class="bg-white p-6 rounded shadow">
-        <div class="mb-4">
-          <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-          <input id="title" name="title" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+    <!-- Add Story -->
+    <section id="add-story" class="hidden">
+      <form id="story-form" class="bg-white p-6 rounded shadow space-y-4">
+        <div>
+          <label class="block">Title</label>
+          <input name="title" type="text" class="w-full border rounded px-2 py-1" required>
         </div>
-
-        <div class="mb-4">
-          <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-          <input id="date" name="date" type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+        <div>
+          <label class="block">Date</label>
+          <input name="date" type="date" class="w-full border rounded px-2 py-1">
         </div>
-
-        <div class="mb-4">
-          <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
-          <input id="tags" name="tags" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="vacation, family, etc.">
+        <div>
+          <label class="block">Tags</label>
+          <input name="tags" type="text" class="w-full border rounded px-2 py-1">
         </div>
-
-        <div class="mb-4">
-          <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-          <textarea id="content" name="content" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></textarea>
+        <div>
+          <label class="block">Content</label>
+          <textarea name="content" rows="6" class="w-full border rounded px-2 py-1" required></textarea>
         </div>
-
-        <div class="flex justify-end space-x-4">
-          <button type="button" id="save-draft" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded-md">Save Draft</button>
-          <button type="button" id="publish-story" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">Publish</button>
+        <div class="flex justify-end space-x-2">
+          <button id="save-draft" type="button" class="px-4 py-2 bg-gray-200 rounded">Save Draft</button>
+          <button id="publish-story" type="button" class="px-4 py-2 bg-blue-600 text-white rounded">Publish</button>
         </div>
       </form>
-    </div>
+    </section>
 
-    <!-- Refine Story View -->
-    <div id="refine-story" class="hidden">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">Refine Your Stories (Coming Soon)</h1>
-      <p class="text-gray-500">We'll add story analysis and refinement tools here!</p>
-    </div>
-
-    <!-- Story Detail View (Optional) -->
-    <div id="story-detail" class="hidden">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4">Story Detail (Coming Soon)</h1>
-      <p class="text-gray-500">Detailed story view.</p>
-    </div>
-
+    <!-- Refine -->
+    <section id="refine-story" class="hidden">
+      <h2 class="text-xl">Refine (coming soon)</h2>
+    </section>
   </main>
-
-  <script src="/js/app.js"></script>
-
 </body>
 </html>

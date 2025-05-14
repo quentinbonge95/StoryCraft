@@ -1,16 +1,19 @@
+# backend/Dockerfile
 FROM python:3.11-slim
 
-# Set work directory
 WORKDIR /app
 
-# Copy backend code
-COPY . . 
+# copy just requirements first for caching
+COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install fastapi uvicorn[standard] SQLAlchemy passlib[bcrypt] PyJWT requests
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Create directory for SQLite DB file and set permissions
-RUN mkdir -p /app/data
+# Copy code
+COPY . .
+
+# ensure folder for SQLite exists
+RUN mkdir -p /app/db
 
 EXPOSE 8000
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
