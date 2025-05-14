@@ -1,0 +1,978 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storyworthy - Your Life in Stories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .story-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .story-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .ai-response {
+            border-left: 4px solid #3b82f6;
+        }
+        .editor-toolbar {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        .editor-content {
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .slide-fade-enter-active {
+            transition: all 0.3s ease-out;
+        }
+        .slide-fade-enter-from {
+            transform: translateX(20px);
+            opacity: 0;
+        }
+        .slide-fade-enter-to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg font-sans">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-book-open text-blue-500 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-800">Storyworthy</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" id="nav-stories">My Stories</a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" id="nav-add">Add Story</a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" id="nav-refine">Refine Story</a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <div class="ml-3 relative">
+                        <div>
+                            <button type="button" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                <span class="sr-only">Open user menu</span>
+                                <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">U</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-controls="mobile-menu" aria-expanded="false" id="mobile-menu-button">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu, show/hide based on menu state. -->
+        <div class="hidden sm:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="#" class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" id="mobile-nav-stories">My Stories</a>
+                <a href="#" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" id="mobile-nav-add">Add Story</a>
+                <a href="#" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" id="mobile-nav-refine">Refine Story</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Stories Dashboard -->
+        <div id="stories-dashboard" class="px-4 sm:px-0">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Your Storyworthy Moments</h1>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out" id="add-new-story-btn">
+                    <i class="fas fa-plus mr-2"></i>Add New Story
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Story cards will be inserted here -->
+                <div class="hidden" id="no-stories-message">
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center py-12">
+                        <i class="fas fa-book-open text-gray-300 text-5xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">No stories yet</h3>
+                        <p class="text-gray-500 mb-4">Start documenting your Storyworthy moments</p>
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out" id="first-story-btn">
+                            Add Your First Story
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Story Form -->
+        <div id="add-story" class="hidden px-4 sm:px-0">
+            <div class="bg-white shadow rounded-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">Add New Story</h1>
+                    <button class="text-gray-500 hover:text-gray-700" id="cancel-add-story">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="story-form">
+                    <div class="mb-4">
+                        <label for="story-title" class="block text-sm font-medium text-gray-700 mb-1">Story Title</label>
+                        <input type="text" id="story-title" name="title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="A moment that changed everything...">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="story-date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" id="story-date" name="date" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Emotional Impact</label>
+                        <div class="flex space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="emotional-impact" value="low" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Low</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="emotional-impact" value="medium" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Medium</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="emotional-impact" value="high" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">High</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="story-tags" class="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                        <input type="text" id="story-tags" name="tags" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="family, graduation, travel">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="story-content" class="block text-sm font-medium text-gray-700 mb-1">Your Story</label>
+                        <div class="rounded-md shadow-sm border border-gray-300">
+                            <div class="editor-toolbar p-2 bg-gray-50 border-b border-gray-300 rounded-t-md">
+                                <button type="button" class="p-1 text-gray-500 hover:text-gray-700" title="Bold"><i class="fas fa-bold"></i></button>
+                                <button type="button" class="p-1 text-gray-500 hover:text-gray-700" title="Italic"><i class="fas fa-italic"></i></button>
+                                <button type="button" class="p-1 text-gray-500 hover:text-gray-700" title="List"><i class="fas fa-list-ul"></i></button>
+                            </div>
+                            <textarea id="story-content" name="content" rows="10" class="editor-content w-full px-3 py-2 focus:outline-none focus:ring-blue-500" placeholder="Your 5-minute story moment goes here..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-4 rounded-md mb-6">
+                        <h3 class="text-sm font-medium text-blue-800 mb-2"><i class="fas fa-lightbulb mr-2"></i>Storyworthy Tip</h3>
+                        <p class="text-sm text-blue-700">"Start with the moment everything changed. A great story has an emotional core - something that made you feel deeply." - Matt Dicks</p>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="save-draft">
+                            Save Draft
+                        </button>
+                        <button type="button" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="publish-story">
+                            Publish Story
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Story Refinement Tool -->
+        <div id="refine-story" class="hidden px-4 sm:px-0">
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="flex border-b border-gray-200">
+                    <div class="w-1/3 border-r border-gray-200 bg-gray-50 p-4">
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Your Stories</h2>
+                        <div class="space-y-2" id="story-list-refine">
+                            <!-- Story list will be populated here -->
+                        </div>
+                    </div>
+                    <div class="w-2/3">
+                        <div class="p-4 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">Story Refinement</h2>
+                            <p class="text-sm text-gray-500">Improve your story using Storyworthy principles</p>
+                        </div>
+                        <div class="p-4 bg-white" id="story-refinement-content">
+                            <div class="text-center py-12 text-gray-400" id="no-story-selected">
+                                <i class="fas fa-book-reader text-4xl mb-4"></i>
+                                <p>Select a story to refine from the list</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Detail View -->
+        <div id="story-detail" class="hidden px-4 sm:px-0">
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800" id="detail-title">Story Title</h1>
+                            <p class="text-sm text-gray-500" id="detail-date">June 12, 2023</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-500 hover:text-gray-700" id="edit-story-btn">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700" id="delete-story-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700" id="close-detail-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4 space-x-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" id="detail-emotion">
+                            Medium Emotional Impact
+                        </span>
+                        <div id="detail-tags"></div>
+                    </div>
+                    
+                    <div class="prose max-w-none mb-6" id="detail-content">
+                        <p>Story content goes here...</p>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2 mb-4">Story Insights</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-yellow-800 mb-2"><i class="fas fa-bullseye mr-2"></i>5-Second Moment</h4>
+                                <p class="text-sm text-yellow-700" id="five-second-moment">The turning point of your story where everything changed.</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-green-800 mb-2"><i class="fas fa-arrow-up mr-2"></i>Stakes</h4>
+                                <p class="text-sm text-green-700" id="story-stakes">What was at risk in this story? Why does it matter?</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg mb-6">
+                            <h4 class="text-sm font-medium text-purple-800 mb-2"><i class="fas fa-question-circle mr-2"></i>Your Homework For A Better Story</h4>
+                            <p class="text-sm text-purple-700" id="story-homework">"Ask yourself: What was the real emotion I was feeling in this moment? Show don't tell."</p>
+                        </div>
+                        
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium transition duration-150 ease-in-out" id="analyze-story-btn">
+                            <i class="fas fa-robot mr-2"></i>Get AI Story Analysis
+                        </button>
+                        
+                        <div class="mt-4 hidden" id="ai-analysis-container">
+                            <div class="border border-gray-200 rounded-lg p-4 ai-response">
+                                <div class="flex items-center mb-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <i class="fas fa-robot mr-1"></i>Story AI
+                                    </span>
+                                    <span class="ml-2 text-xs text-gray-500">Just now</span>
+                                </div>
+                                <div id="ai-analysis-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Temporary Loading Modal -->
+    <div id="loading-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full text-center">
+            <div class="animate-pulse mb-4">
+                <i class="fas fa-spinner fa-spin text-blue-500 text-4xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Processing your story</h3>
+            <p class="text-sm text-gray-500">Applying Storyworthy principles...</p>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <i class="fas fa-exclamation text-red-600"></i>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="confirm-title">Delete story</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500" id="confirm-message">Are you sure you want to delete this story? All data will be permanently removed.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm" id="confirm-yes">
+                    Confirm
+                </button>
+                <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm" id="confirm-no">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database simulation using localStorage
+        const API_BASE = "http://localhost:8000"; // Adjust if needed later
+
+        const StoryDB = {
+            async getStories() {
+                const res = await fetch(`${API_BASE}/stories/`);
+                return res.json();
+            },
+            async saveStory(story) {
+                const method = story.id ? "PUT" : "POST";
+                const url = story.id ? `${API_BASE}/stories/${story.id}` : `${API_BASE}/stories/`;
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(story),
+                });
+                return res.json();
+            },
+            async deleteStory(id) {
+                await fetch(`${API_BASE}/stories/${id}`, { method: "DELETE" });
+            },
+            async getStory(id) {
+                const res = await fetch(`${API_BASE}/stories/${id}`);
+                return res.json();
+            },
+            async analyzeStory(id) {
+                const res = await fetch(`${API_BASE}/stories/${id}/analyze`, { method: "POST" });
+                return res.json();
+            }
+        };
+
+
+        // UI State Management
+        const UIState = {
+            currentView: 'dashboard',
+            currentStoryId: null,
+            init: function() {
+                this.bindEvents();
+                this.showDashboard();
+                this.renderStories();
+            },
+            bindEvents: function() {
+                // Navigation
+                document.getElementById('nav-stories').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showDashboard();
+                });
+                document.getElementById('nav-add').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showAddStory();
+                });
+                document.getElementById('nav-refine').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showRefineStory();
+                });
+                
+                // Mobile navigation
+                document.getElementById('mobile-nav-stories').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showDashboard();
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                });
+                document.getElementById('mobile-nav-add').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showAddStory();
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                });
+                document.getElementById('mobile-nav-refine').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showRefineStory();
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                });
+                
+                // Mobile menu toggle
+                document.getElementById('mobile-menu-button').addEventListener('click', () => {
+                    document.getElementById('mobile-menu').classList.toggle('hidden');
+                });
+                
+                // Buttons
+                document.getElementById('add-new-story-btn').addEventListener('click', () => {
+                    this.showAddStory();
+                });
+                document.getElementById('first-story-btn').addEventListener('click', () => {
+                    this.showAddStory();
+                });
+                document.getElementById('cancel-add-story').addEventListener('click', () => {
+                    this.showDashboard();
+                });
+                document.getElementById('close-detail-btn').addEventListener('click', () => {
+                    this.showDashboard();
+                });
+                
+                // Form actions
+                document.getElementById('publish-story').addEventListener('click', () => {
+                    this.saveStory(false);
+                });
+                document.getElementById('save-draft').addEventListener('click', () => {
+                    this.saveStory(true);
+                });
+                
+                // Delete story
+                document.getElementById('delete-story-btn').addEventListener('click', () => {
+                    this.showConfirmModal(
+                        'Delete Story',
+                        'Are you sure you want to delete this story? All data will be permanently removed.',
+                        () => {
+                            StoryDB.deleteStory(UIState.currentStoryId);
+                            UIState.showDashboard();
+                            UIState.hideConfirmModal();
+                        }
+                    );
+                });
+                
+                // Edit story
+                document.getElementById('edit-story-btn').addEventListener('click', () => {
+                    const story = StoryDB.getStory(UIState.currentStoryId);
+                    if (story) {
+                        this.populateEditForm(story);
+                        this.showAddStory();
+                    }
+                });
+                
+                // AI Analysis
+                document.getElementById('analyze-story-btn').addEventListener('click', () => {
+                    this.generateAIAnalysis();
+                });
+                
+                // Confirm modal
+                document.getElementById('confirm-no').addEventListener('click', () => {
+                    this.hideConfirmModal();
+                });
+            },
+            showDashboard: function() {
+                this.currentView = 'dashboard';
+                this.updateNavState();
+                document.getElementById('stories-dashboard').classList.remove('hidden');
+                document.getElementById('add-story').classList.add('hidden');
+                document.getElementById('refine-story').classList.add('hidden');
+                document.getElementById('story-detail').classList.add('hidden');
+                this.renderStories();
+            },
+            showAddStory: function(clearForm = true) {
+                this.currentView = 'add';
+                this.updateNavState();
+                document.getElementById('stories-dashboard').classList.add('hidden');
+                document.getElementById('add-story').classList.remove('hidden');
+                document.getElementById('refine-story').classList.add('hidden');
+                document.getElementById('story-detail').classList.add('hidden');
+                
+                if (clearForm) {
+                    document.getElementById('story-form').reset();
+                    document.getElementById('story-title').focus();
+                }
+            },
+            showRefineStory: function() {
+                this.currentView = 'refine';
+                this.updateNavState();
+                document.getElementById('stories-dashboard').classList.add('hidden');
+                document.getElementById('add-story').classList.add('hidden');
+                document.getElementById('refine-story').classList.remove('hidden');
+                document.getElementById('story-detail').classList.add('hidden');
+                this.renderStoryListForRefinement();
+            },
+            showStoryDetail: function(id) {
+                this.currentView = 'detail';
+                this.currentStoryId = id;
+                this.updateNavState();
+                document.getElementById('stories-dashboard').classList.add('hidden');
+                document.getElementById('add-story').classList.add('hidden');
+                document.getElementById('refine-story').classList.add('hidden');
+                document.getElementById('story-detail').classList.remove('hidden');
+                
+                const story = StoryDB.getStory(id);
+                if (story) {
+                    this.populateStoryDetail(story);
+                }
+            },
+            updateNavState: function() {
+                // Reset all nav items
+                document.querySelectorAll('#nav-stories, #nav-add, #nav-refine').forEach(el => {
+                    el.classList.remove('border-blue-500', 'text-gray-900');
+                    el.classList.add('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+                });
+                
+                document.querySelectorAll('#mobile-nav-stories, #mobile-nav-add, #mobile-nav-refine').forEach(el => {
+                    el.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-700');
+                    el.classList.add('border-transparent', 'text-gray-500', 'hover:bg-gray-50', 'hover:border-gray-300', 'hover:text-gray-700');
+                });
+                
+                // Set active nav item
+                if (this.currentView === 'dashboard') {
+                    document.getElementById('nav-stories').classList.add('border-blue-500', 'text-gray-900');
+                    document.getElementById('nav-stories').classList.remove('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+                    document.getElementById('mobile-nav-stories').classList.add('bg-blue-50', 'border-blue-500', 'text-blue-700');
+                } else if (this.currentView === 'add') {
+                    document.getElementById('nav-add').classList.add('border-blue-500', 'text-gray-900');
+                    document.getElementById('nav-add').classList.remove('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+                    document.getElementById('mobile-nav-add').classList.add('bg-blue-50', 'border-blue-500', 'text-blue-700');
+                } else if (this.currentView === 'refine') {
+                    document.getElementById('nav-refine').classList.add('border-blue-500', 'text-gray-900');
+                    document.getElementById('nav-refine').classList.remove('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+                    document.getElementById('mobile-nav-refine').classList.add('bg-blue-50', 'border-blue-500', 'text-blue-700');
+                }
+            },
+            renderStories: function() {
+                const stories = StoryDB.getStories();
+                const container = document.querySelector('#stories-dashboard .grid');
+                
+                // Clear existing stories
+                container.innerHTML = '';
+                
+                if (stories.length === 0) {
+                    document.getElementById('no-stories-message').classList.remove('hidden');
+                    return;
+                }
+                
+                document.getElementById('no-stories-message').classList.add('hidden');
+                
+                stories.forEach(story => {
+                    const card = document.createElement('div');
+                    card.className = 'story-card bg-white rounded-lg overflow-hidden shadow-md cursor-pointer';
+                    card.addEventListener('click', () => this.showStoryDetail(story.id));
+                    
+                    const emotionColor = {
+                        'low': 'bg-green-100 text-green-800',
+                        'medium': 'bg-blue-100 text-blue-800',
+                        'high': 'bg-red-100 text-red-800'
+                    }[story.emotionalImpact] || 'bg-gray-100 text-gray-800';
+                    
+                    card.innerHTML = 
+                        <div class="p-6">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">${story.title}</h3>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${emotionColor}">
+                                    ${story.emotionalImpact.charAt(0).toUpperCase() + story.emotionalImpact.slice(1)}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-3">${new Date(story.date).toLocaleDateString()}</p>
+                            <p class="text-gray-600 line-clamp-3">${story.content.substring(0, 150)}${story.content.length > 150 ? '...' : ''}</p>
+                            <div class="mt-4 flex flex-wrap gap-1" id="story-${story.id}-tags"></div>
+                        </div>
+                    ;
+                    
+                    container.appendChild(card);
+                    
+                    // Render tags
+                    if (story.tags) {
+                        const tagsContainer = document.getElementById(story-${story.id}-tags);
+                        story.tags.split(',').forEach(tag => {
+                            if (tag.trim()) {
+                                const tagElement = document.createElement('span');
+                                tagElement.className = 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800';
+                                tagElement.textContent = tag.trim();
+                                tagsContainer.appendChild(tagElement);
+                            }
+                        });
+                    }
+                });
+            },
+            renderStoryListForRefinement: function() {
+                const stories = StoryDB.getStories();
+                const container = document.getElementById('story-list-refine');
+                
+                container.innerHTML = '';
+                
+                if (stories.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'text-center py-8 text-gray-400';
+                    emptyState.innerHTML = 
+                        <i class="fas fa-book-open text-3xl mb-2"></i>
+                        <p>No stories to refine</p>
+                        <button class="mt-4 text-blue-500 text-sm font-medium" id="go-add-story">Add a story first</button>
+                    ;
+                    container.appendChild(emptyState);
+                    
+                    document.getElementById('go-add-story').addEventListener('click', () => {
+                        this.showAddStory();
+                    });
+                    
+                    return;
+                }
+                
+                stories.forEach(story => {
+                    const storyEl = document.createElement('div');
+                    storyEl.className = 'p-3 rounded-md hover:bg-gray-100 cursor-pointer';
+                    storyEl.addEventListener('click', () => this.showStoryRefinement(story.id));
+                    
+                    storyEl.innerHTML = 
+                        <h4 class="font-medium">${story.title}</h4>
+                        <p class="text-sm text-gray-500">${new Date(story.date).toLocaleDateString()}</p>
+                    ;
+                    
+                    container.appendChild(storyEl);
+                });
+            },
+            populateStoryDetail: function(story) {
+                document.getElementById('detail-title').textContent = story.title;
+                document.getElementById('detail-date').textContent = new Date(story.date).toLocaleDateString();
+                document.getElementById('detail-content').innerHTML = <p>${story.content.replace(/\n/g, '</p><p>')}</p>;
+                
+                // Set emotional impact
+                const emotionText = {
+                    'low': 'Low Emotional Impact',
+                    'medium': 'Medium Emotional Impact',
+                    'high': 'High Emotional Impact'
+                }[story.emotionalImpact] || 'Unknown Emotional Impact';
+                
+                document.getElementById('detail-emotion').textContent = emotionText;
+                
+                // Set tags
+                const tagsContainer = document.getElementById('detail-tags');
+                tagsContainer.innerHTML = '';
+                
+                if (story.tags) {
+                    story.tags.split(',').forEach(tag => {
+                        if (tag.trim()) {
+                            const tagElement = document.createElement('span');
+                            tagElement.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+                            tagElement.textContent = tag.trim();
+                            tagsContainer.appendChild(tagElement);
+                        }
+                    });
+                }
+                
+                // Generate insights
+                this.generateInsights(story);
+                
+                // Hide AI analysis if it exists
+                document.getElementById('ai-analysis-container').classList.add('hidden');
+            },
+            populateEditForm: function(story) {
+                document.getElementById('story-title').value = story.title;
+                document.getElementById('story-date').value = story.date.split('T')[0];
+                document.getElementById('story-content').value = story.content;
+                document.getElementById('story-tags').value = story.tags || '';
+                
+                // Set emotional impact radio
+                document.querySelector(input[name="emotional-impact"][value="${story.emotionalImpact}"]).checked = true;
+                
+                // Set the story ID for update
+                document.getElementById('story-form').dataset.storyId = story.id;
+                
+                // Change button text
+                document.getElementById('publish-story').textContent = 'Update Story';
+            },
+            showStoryRefinement: function(storyId) {
+                const story = StoryDB.getStory(storyId);
+                if (!story) return;
+                
+                const refineContent = document.getElementById('story-refinement-content');
+                refineContent.innerHTML = 
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">${story.title}</h3>
+                        <p class="text-sm text-gray-500 mb-4">${new Date(story.date).toLocaleDateString()}</p>
+                        <div class="prose max-w-none mb-6">
+                            <p>${story.content.replace(/\n/g, '</p><p>')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-4 rounded-md mb-6">
+                        <h3 class="text-sm font-medium text-blue-800 mb-2"><i class="fas fa-question-circle mr-2"></i>Storyworthy Refinement Questions</h3>
+                        <p class="text-sm text-blue-700 mb-2">Answer these questions to improve your story:</p>
+                        <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+                            <li>What was the moment of change in this story?</li>
+                            <li>What emotions were you truly feeling in this moment?</li>
+                            <li>What details can you add to make the moment more vivid?</li>
+                            <li>What was the real lesson or meaning behind this story?</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden mb-6">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                            <h4 class="text-sm font-medium text-gray-800">Edit Your Story</h4>
+                        </div>
+                        <textarea id="refine-story-content" class="w-full p-4 focus:outline-none" rows="10">${story.content}</textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="cancel-refine">
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="save-refined-story" data-story-id="${story.id}">
+                            Save Changes
+                        </button>
+                    </div>
+                ;
+                
+                // Add event listeners for the new buttons
+                document.getElementById('cancel-refine').addEventListener('click', () => {
+                    this.showRefineStory();
+                });
+                
+                document.getElementById('save-refined-story').addEventListener('click', () => {
+                    this.saveRefinedStory();
+                });
+            },
+            saveStory: function(isDraft) {
+                const form = document.getElementById('story-form');
+                const title = document.getElementById('story-title').value.trim();
+                const date = document.getElementById('story-date').value;
+                const content = document.getElementById('story-content').value.trim();
+                const tags = document.getElementById('story-tags').value.trim();
+                const emotionalImpact = document.querySelector('input[name="emotional-impact"]:checked').value;
+                
+                if (!title || !content) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                const story = {
+                    title,
+                    date: date || new Date().toISOString(),
+                    content,
+                    tags,
+                    emotionalImpact,
+                    status: isDraft ? 'draft' : 'published',
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // If editing an existing story
+                if (form.dataset.storyId) {
+                    const existingStory = StoryDB.getStory(form.dataset.storyId);
+                    if (existingStory) {
+                        story.id = existingStory.id;
+                        story.createdAt = existingStory.createdAt;
+                    }
+                }
+                
+                this.showLoadingModal('Saving your story...');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    StoryDB.saveStory(story);
+                    this.hideLoadingModal();
+                    this.showDashboard();
+                    
+                    // Show success message
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg';
+                    toast.textContent = isDraft ? 'Draft saved successfully!' : 'Story published successfully!';
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
+                }, 1000);
+            },
+            saveRefinedStory: function() {
+                const button = document.getElementById('save-refined-story');
+                const storyId = button.dataset.storyId;
+                const newContent = document.getElementById('refine-story-content').value.trim();
+                
+                if (!storyId || !newContent) return;
+                
+                const story = StoryDB.getStory(storyId);
+                if (!story) return;
+                
+                story.content = newContent;
+                story.updatedAt = new Date().toISOString();
+                
+                this.showLoadingModal('Saving refined story...');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    StoryDB.saveStory(story);
+                    this.hideLoadingModal();
+                    
+                    // Show success message
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg';
+                    toast.textContent = 'Story refined successfully!';
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3000);
+                    
+                    // Refresh the view
+                    this.showStoryRefinement(storyId);
+                }, 1000);
+            },
+            generateInsights: function(story) {
+                // This is a simplified version - in a real app, this would use AI or analysis
+                const content = story.content.toLowerCase();
+                
+                // Five-second moment
+                const fiveSecondMoments = [
+                    "When I realized what was happening...",
+                    "At that moment, everything changed...",
+                    "The turning point came when...",
+                    "Then suddenly, I understood..."
+                ];
+                const randomFiveSecond = fiveSecondMoments[Math.floor(Math.random() * fiveSecondMoments.length)];
+                document.getElementById('five-second-moment').textContent = randomFiveSecond;
+                
+                // Stakes
+                let stakeText = "Something important was on the line - your beliefs or values were challenged.";
+                if (content.includes('risk') || content.includes('danger')) {
+                    stakeText = "Physical or emotional safety was at stake.";
+                } else if (content.includes('love') || content.includes('relationship')) {
+                    stakeText = "A meaningful relationship was on the line.";
+                } else if (content.includes('job') || content.includes('career')) {
+                    stakeText = "Your career or professional future was at stake.";
+                }
+                document.getElementById('story-stakes').textContent = stakeText;
+                
+                // Homework
+                const homeworkTips = [
+                    "Try starting your story closer to the moment everything changed.",
+                    "What sensory details can you add to make the moment more vivid?",
+                    "What emotion were you really feeling? Show it through actions, not just stating it.",
+                    "What was the lesson or meaning you took from this experience?",
+                    "What did you think was going to happen vs what actually happened?"
+                ];
+                const randomHomework = homeworkTips[Math.floor(Math.random() * homeworkTips.length)];
+                document.getElementById('story-homework').textContent = randomHomework;
+            },
+            generateAIAnalysis: async function() {
+                this.showLoadingModal('Analyzing your story...');
+                document.getElementById('ai-analysis-container').classList.add('hidden');
+
+                try {
+                    const result = await StoryDB.analyzeStory(this.currentStoryId);
+                    this.hideLoadingModal();
+
+                    document.getElementById('ai-analysis-content').innerHTML = `
+                        <h4 class="font-medium mb-2 text-gray-800">Your Story Analysis</h4>
+                        <p class="text-gray-600">${result.analysis.replace(/\n/g, "<br>")}</p>
+                    `;
+                    document.getElementById('ai-analysis-container').classList.remove('hidden');
+                    document.getElementById('ai-analysis-container').scrollIntoView({ behavior: "smooth" });
+                } catch (error) {
+                    this.hideLoadingModal();
+                    alert("Failed to analyze story.");
+                    console.error(error);
+                }
+            },
+
+            createMockAIResponse: function(story) {
+                const content = story.content.toLowerCase();
+                let response = <h4 class="font-medium mb-2 text-gray-800">Your Story Analysis</h4>;
+                
+                response += <p class="mb-3">Here's my analysis of your story "<strong>${story.title}</strong>" based on Storyworthy principles:</p>;
+                
+                // Emotional impact
+                response += <div class="mb-3">
+                    <p class="font-medium text-gray-700 mb-1">Emotional Core:</p>
+                    <p>Your story has a ${story.emotionalImpact} emotional impact. ;
+                
+                if (story.emotionalImpact === 'high') {
+                    response += This suggests strong feelings that will connect with audiences.;
+                } else if (story.emotionalImpact === 'medium') {
+                    response += Consider digging deeper to uncover stronger emotional truths.;
+                } else {
+                    response += Every story can benefit from more emotional honesty. What were you really feeling?;
+                }
+                
+                response += </p></div>;
+                
+                // Possible five-second moment
+                response += <div class="mb-3">
+                    <p class="font-medium text-gray-700 mb-1">Possible 5-Second Moment:</p>
+                    <p>${this.getRandomElement([
+                        "I notice a shift around the part where you describe the realization - this could be your 5-second moment if sharpened.",
+                        "The transition between the setup and the main action might contain your 5-second moment. Try starting nearer to that point.",
+                        "Look for the moment where your attitude or understanding changed - that's likely your 5-second moment."
+                    ])}</p>
+                </div>;
+                
+                // Recommendations
+                response += <div class="mb-3">
+                    <p class="font-medium text-gray-700 mb-1">Recommendations:</p>
+                    <ul class="list-disc list-inside space-y-1 pl-2">;
+                
+                const recommendations = [
+                    "Try cutting the first 30% of your story - does it still work? If yes, those openings weren't essential.",
+                    "Look for places where you 'tell' emotions ('I was sad') and replace with 'showing' through actions or dialogue.",
+                    "Raise the stakes by making clearer what was on the line emotionally."
+                ];
+                
+                if (content.length < 300) {
+                    recommendations.push("Your story is quite short - consider adding sensory details to immerse the audience.");
+                } else if (content.length > 1000) {
+                    recommendations.push("Your story might benefit from tightening - identify the essential moments.");
+                }
+                
+                recommendations.forEach(rec => {
+                    response += <li>${rec}</li>;
+                });
+                
+                response += </ul></div>;
+                
+                // Probing questions
+                response += <div class="mt-4 p-3 bg-blue-50 rounded-md">
+                    <p class="font-medium text-blue-700 mb-1">Probing Questions to Improve Your Story:</p>
+                    <ul class="list-disc list-inside space-y-1 pl-2 text-blue-700">;
+                
+                const questions = [
+                    "What did you learn about yourself from this experience?",
+                    "What physical sensations do you remember from that moment?",
+                    "If you could tell your past self one thing about this moment, what would it be?",
+                    "How did this experience change how you see the world?",
+                    "What details might surprise or engage the audience?"
+                ];
+                
+                questions.forEach(q => {
+                    response += <li>${q}</li>;
+                });
+                
+                response += </ul></div>;
+                
+                return response;
+            },
+            getRandomElement: function(array) {
+                return array[Math.floor(Math.random() * array.length)];
+            },
+            showLoadingModal: function(message = '') {
+                if (message) {
+                    document.querySelector('#loading-modal p').textContent = message;
+                }
+                document.getElementById('loading-modal').classList.remove('hidden');
+            },
+            hideLoadingModal: function() {
+                document.getElementById('loading-modal').classList.add('hidden');
+            },
+            showConfirmModal: function(title, message, confirmCallback) {
+                document.getElementById('confirm-title').textContent = title;
+                document.getElementById('confirm-message').textContent = message;
+                document.getElementById('confirm-modal').classList.remove('hidden');
+                
+                // Store callback in button
+                document.getElementById('confirm-yes').onclick = confirmCallback;
+            },
+            hideConfirmModal: function() {
+                document.getElementById('confirm-modal').classList.add('hidden');
+                document.getElementById('confirm-yes').onclick = null;
+            }
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            UIState.init();
+        });
+    </script>
+</body>
+</html>

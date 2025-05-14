@@ -1,0 +1,16 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "StoryCraft Frontend",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./dist/output.css --minify",
+    "watch:css": "npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch"
+  },
+  "author": "Quentin Bonge",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.3.2",
+    "postcss": "^8.4.24",
+    "autoprefixer": "^10.4.14"
+  }
+}

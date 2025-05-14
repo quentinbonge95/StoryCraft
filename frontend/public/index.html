@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storyworthy - Your Life in Stories</title>
+  <link href="/output.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/all.min.css">
+  <script src="js/app.js" defer></script>
+</head>
+
+<body class="min-h-screen gradient-bg font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex items-center">
+            <i class="fas fa-book-open text-blue-500 text-2xl mr-2"></i>
+            <span class="text-xl font-bold text-gray-800">Storyworthy</span>
+          </div>
+          <div class="hidden sm:flex sm:space-x-8 ml-10">
+            <a href="#" id="nav-stories" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">My Stories</a>
+            <a href="#" id="nav-add" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">Add Story</a>
+            <a href="#" id="nav-refine" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">Refine Story</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+
+    <!-- Prompt Card -->
+    <div id="prompt-card" class="p-4 mb-6 bg-yellow-100 rounded shadow hidden">
+      <strong>Prompt:</strong> <span id="prompt-text">Loading...</span>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="stories-dashboard" class="">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Your Stories</h1>
+        <button id="nav-add-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md font-medium">+ Add Story</button>
+      </div>
+      <div id="stories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <!-- Add Story View -->
+    <div id="add-story" class="hidden">
+      <form id="story-form" class="bg-white p-6 rounded shadow">
+        <div class="mb-4">
+          <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+          <input id="title" name="title" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+        </div>
+
+        <div class="mb-4">
+          <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+          <input id="date" name="date" type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+        </div>
+
+        <div class="mb-4">
+          <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+          <input id="tags" name="tags" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="vacation, family, etc.">
+        </div>
+
+        <div class="mb-4">
+          <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+          <textarea id="content" name="content" rows="6" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+          <button type="button" id="save-draft" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black rounded-md">Save Draft</button>
+          <button type="button" id="publish-story" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">Publish</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Refine Story View -->
+    <div id="refine-story" class="hidden">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">Refine Your Stories (Coming Soon)</h1>
+      <p class="text-gray-500">We'll add story analysis and refinement tools here!</p>
+    </div>
+
+    <!-- Story Detail View (Optional) -->
+    <div id="story-detail" class="hidden">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4">Story Detail (Coming Soon)</h1>
+      <p class="text-gray-500">Detailed story view.</p>
+    </div>
+
+  </main>
+
+  <script src="/js/app.js"></script>
+
+</body>
+</html>
