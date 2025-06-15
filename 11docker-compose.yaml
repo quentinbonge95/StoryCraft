@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - storyworthy_data:/app/db     # persistent SQLite folder
+    environment:
+      DATABASE_URL: sqlite:///db/storyworthy.db
+      OLLAMA_URL: http://0.0.0.0:11434
+    depends_on:
+      - ollama
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    # no volume—statically built into image
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+
+volumes:
+  storyworthy_data:
+  ollama_models:

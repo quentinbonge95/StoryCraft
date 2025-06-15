@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-05-26T19:18:20.542Z",
+  "totalTests": 5,
+  "tests": [
+    {
+      "name": "Simple Title Generation",
+      "status": "success",
+      "file": "./simple-title-generation-*.json"
+    },
+    {
+      "name": "Title with Think Tags",
+      "status": "success",
+      "file": "./title-with-think-tags-*.json"
+    },
+    {
+      "name": "Story Analysis",
+      "status": "success",
+      "file": "./story-analysis-*.json"
+    },
+    {
+      "name": "Story Enhancement",
+      "status": "success",
+      "file": "./story-enhancement-*.json"
+    },
+    {
+      "name": "High Temperature",
+      "status": "success",
+      "file": "./high-temperature-*.json"
+    }
+  ]
+}
