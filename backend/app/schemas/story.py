@@ -11,6 +11,7 @@ class StoryBase(BaseModel):
     tags: Optional[str] = Field(None, max_length=200)
     emotional_impact: Optional[str] = Field("medium", max_length=20)
     analysis: Optional[str] = None
+    status: str = 'draft'
     owner_id: Optional[int] = None  # Will be set by the API, not by the user
 
 class StoryCreate(StoryBase):
@@ -23,6 +24,7 @@ class StoryUpdate(BaseModel):
     tags: Optional[str] = None
     emotional_impact: Optional[str] = None
     analysis: Optional[str] = None
+    status: Optional[str] = None
 
 class Story(StoryBase):
     """Story schema for API responses.

@@ -17,9 +17,13 @@ def get_stories(
     user_id: int,
     skip: int = 0,
     limit: int = 100,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    sort_by: Optional[str] = 'newest',
+    status: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
 ) -> List[models.Story]:
-    """Get multiple stories for a specific user, with optional search."""
+    """Get multiple stories for a specific user, with optional search and filtering."""
     query = db.query(models.Story).filter(models.Story.owner_id == user_id)
 
     if search:
@@ -29,6 +33,20 @@ def get_stories(
             models.Story.tags.ilike(f"%{search}%")
         )
         query = query.filter(search_filter)
+
+    if status:
+        query = query.filter(models.Story.status == status)
+    if date_from:
+        query = query.filter(models.Story.date >= date_from)
+    if date_to:
+        query = query.filter(models.Story.date <= date_to)
+
+    if sort_by == 'oldest':
+        query = query.order_by(models.Story.date.asc())
+    elif sort_by == 'title':
+        query = query.order_by(models.Story.title.asc())
+    else:
+        query = query.order_by(models.Story.date.desc())
 
     return query.offset(skip).limit(limit).all()
 

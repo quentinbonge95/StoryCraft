@@ -11,6 +11,17 @@ from .. import models, schemas
 from ..crud import user as crud_user
 from ..database import get_db
 from .config import settings
+from cryptography.fernet import Fernet
+
+# Encryption for API keys
+key = settings.SECRET_KEY.encode()
+fernet = Fernet(key)
+
+def encrypt_api_key(api_key: str) -> str:
+    return fernet.encrypt(api_key.encode()).decode()
+
+def decrypt_api_key(encrypted_api_key: str) -> str:
+    return fernet.decrypt(encrypted_api_key.encode()).decode()
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

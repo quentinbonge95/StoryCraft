@@ -1,14 +1,15 @@
-import os
 import re
 import httpx
+from .core.config import settings
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434/api/generate")
+# Use OLLAMA_HOST from settings and append /api/generate
+OLLAMA_URL = f"{settings.OLLAMA_HOST}/api/generate"
 
 def remove_think_tags(text: str) -> str:
     """Remove content within <think> tags from the response."""
     return re.sub(r'<think>.*?<\/think>', '', text, flags=re.DOTALL).strip()
 
-def analyze_story(content: str) -> str:
+def analyze_story(content: str, model_name: str = None) -> str:
     prompt = (
         "Using Storyworthy principles by Matt Dicks, analyze this story focusing on:\n"
         "1. The '5-second moment' - identify the most emotionally charged moment\n"
@@ -24,8 +25,11 @@ def analyze_story(content: str) -> str:
         "5. Emotional Arc: [description]\n\n"
         "Do not repeat the story content in your response."
     )
+    # Use provided model_name or fall back to settings
+    model_to_use = model_name or settings.OLLAMA_MODEL
+    
     payload = {
-        "model": "qwen3:1.7b", 
+        "model": model_to_use,
         "prompt": prompt, 
         "stream": False,
         "options": {

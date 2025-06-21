@@ -18,6 +18,7 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     stories = relationship("Story", back_populates="owner", cascade="all, delete-orphan")
+    ai_model = relationship("AIModel", back_populates="owner", uselist=False, cascade="all, delete-orphan")
 
 class Story(Base):
     __tablename__ = "stories"
@@ -28,9 +29,21 @@ class Story(Base):
     content = Column(Text, nullable=False)
     tags = Column(String, default="")
     emotional_impact = Column(String, default="medium")
+    status = Column(String, default="draft", nullable=False)
     analysis = Column(Text, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     owner = relationship("User", back_populates="stories")
+
+class AIModel(Base):
+    __tablename__ = "ai_models"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    provider = Column(String, nullable=False)  # e.g., 'ollama', 'openai'
+    model_name = Column(String, nullable=False)  # e.g., 'qwen3:1.7b', 'gpt-4'
+    api_key = Column(String, nullable=True)  # Only required for external providers
+
+    owner = relationship("User", back_populates="ai_model")

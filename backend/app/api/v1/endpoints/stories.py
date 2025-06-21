@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from .... import models, schemas
 from ....crud import story as crud_story
+from ....services.ai_service import analyze_story_with_ai
 from ....database import get_db
 from ....core import security
 
@@ -26,6 +27,10 @@ async def read_stories(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = None,
+    sort_by: Optional[str] = 'newest',
+    status: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(security.get_current_active_user),
 ):
@@ -37,7 +42,11 @@ async def read_stories(
         user_id=current_user.id,
         skip=skip,
         limit=limit,
-        search=search
+        search=search,
+        sort_by=sort_by,
+        status=status,
+        date_from=date_from,
+        date_to=date_to
     )
 
 @router.get("/{story_id}", response_model=schemas.Story)
@@ -122,15 +131,13 @@ async def analyze_story(
             detail="Story not found"
         )
     
-    # TODO: Implement actual story analysis logic
-    # This is a placeholder that just returns some mock data
-    analysis = {
-        "emotional_tone": "positive",
-        "key_themes": ["adventure", "friendship"],
-        "word_count": len(db_story.content.split()),
-        "readability": "intermediate",
-        "sentiment_score": 0.8
-    }
+    analysis = await analyze_story_with_ai(story_content=db_story.content, user=current_user, db=db)
+    
+    if "error" in analysis:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=analysis["error"]
+        )
     
     # Update the story with the analysis
     db_story = crud_story.update_story_analysis(

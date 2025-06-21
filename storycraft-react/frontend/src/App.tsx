@@ -18,7 +18,7 @@ import { LoginPage } from './pages/LoginPage';
 import { NotFound } from './pages/NotFound';
 import { ProfilePage } from './pages/ProfilePage';
 import { RegisterPage } from './pages/RegisterPage';
-import { SettingsPage } from './pages/SettingsPage';
+import SettingsPage from './pages/SettingsPage';
 import { StoryForm } from './pages/StoryForm';
 import { StoryView } from './pages/StoryView';
 

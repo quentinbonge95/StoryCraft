@@ -129,7 +129,7 @@ export const StoryForm = ({ story: initialStory, onSuccess }: StoryFormProps) =>
     defaultValues: {
       title: story?.title || '',
       content: story?.content || '',
-      date: story?.date ? parseISO(story.date) : new Date(),
+      date: story?.date ? parseISO(`${story.date}T12:00:00Z`) : new Date(),
       tags: getInitialTags(),
       status: getInitialStatus(),
       excerpt: story?.excerpt || ''
@@ -170,7 +170,7 @@ export const StoryForm = ({ story: initialStory, onSuccess }: StoryFormProps) =>
       reset({
         title: story.title,
         content: story.content,
-        date: parseISO(story.date),
+        date: parseISO(`${story.date}T12:00:00Z`),
         tags: getInitialTags(),
         status: getInitialStatus(),
         excerpt: story.excerpt || ''
@@ -527,30 +527,28 @@ export const StoryForm = ({ story: initialStory, onSuccess }: StoryFormProps) =>
             </Button>
           </div>
           <div className="space-y-4">
-            {analysis.emotionalArc && (
+            {analysis.emotional_tone && (
               <div>
-                <h4 className="font-medium">Emotional Arc</h4>
-                <p>{analysis.emotionalArc}</p>
+                <h4 className="font-medium">Emotional Tone</h4>
+                <p>{analysis.emotional_tone}</p>
               </div>
             )}
-            {analysis.keyElements && analysis.keyElements.length > 0 && (
+            {analysis.key_themes && (
               <div>
-                <h4 className="font-medium">Key Elements</h4>
-                <ul className="list-disc pl-5">
-                  {analysis.keyElements.map((element: string, i: number) => (
-                    <li key={i}>{element}</li>
-                  ))}
-                </ul>
+                <h4 className="font-medium">Key Themes</h4>
+                <p className="whitespace-pre-line">{analysis.key_themes}</p>
               </div>
             )}
-            {analysis.suggestions && analysis.suggestions.length > 0 && (
+            {analysis.readability && (
               <div>
-                <h4 className="font-medium">Suggestions</h4>
-                <ul className="list-disc pl-5">
-                  {analysis.suggestions.map((suggestion: string, i: number) => (
-                    <li key={i}>{suggestion}</li>
-                  ))}
-                </ul>
+                <h4 className="font-medium">Readability</h4>
+                <p>{analysis.readability}</p>
+              </div>
+            )}
+            {analysis.sentiment_score !== undefined && (
+              <div>
+                <h4 className="font-medium">Sentiment Score</h4>
+                <p>{analysis.sentiment_score}/10</p>
               </div>
             )}
           </div>
