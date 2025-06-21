@@ -1,7 +1,6 @@
 import axios, { AxiosError } from 'axios';
-import config from '../config';
 import { cleanAiResponse } from '../utils/cleanAiResponse';
-import { getAIModelSettings } from './SettingsService'; // Import to get user's selected model
+import config from '../config';
 
 // Re-export cleanAiResponse for backward compatibility
 export { cleanAiResponse };
@@ -16,14 +15,10 @@ declare global {
 }
 
 const API_URL = 'http://localhost:8000';
-const OLLAMA_TIMEOUT = 180000; // 3 minutes for Ollama responses
+const OLLAMA_TIMEOUT = 120000; // 2 minutes for Ollama responses
 
 export interface AIAnalysisResponse {
-  emotional_tone: string;
-  key_themes: string;
-  readability: string;
-  sentiment_score: number;
-  // Keeping these for backward compatibility
+  sentiment?: string;
   emotionalArc?: string;
   keyElements?: string[];
   suggestions?: string[];
@@ -56,65 +51,25 @@ export const handleApiError = (error: unknown): never => {
   throw error;
 };
 
-// Define the shape of our mock responses
-interface MockResponses {
-  analyze: AIAnalysisResponse;
-  enhance: EnhanceResponse;
-  generateTitle: TitleResponse;
-  analyzeWithCore: AIAnalysisResponse & {
-    coreMoment: string;
-    structure: string;
-    transformation: string;
-  };
-}
-
 // Mock AI service for development
-const MOCK_AI_RESPONSES: MockResponses = {
+const MOCK_AI_RESPONSES = {
   analyze: {
-    emotional_tone: 'The story has a generally positive and uplifting emotional tone with moments of tension and resolution.',
-    key_themes: 'Themes of personal growth, overcoming challenges, and self-discovery are present throughout the narrative.',
-    readability: 'The story is well-written with good sentence structure and vocabulary, suitable for a general audience.',
-    sentiment_score: 8,
-    // Keeping these for backward compatibility
     emotionalArc: 'The story has a positive emotional arc with a clear beginning, middle, and end.',
     keyElements: [
-      'Clear protagonist with defined goals',
-      'Challenges that create tension',
-      'Satisfying resolution'
+      'Strong character development',
+      'Clear setting description',
+      'Engaging plot points'
     ],
     suggestions: [
-      'Add more sensory details to enhance immersion',
-      'Consider varying sentence structure for better flow',
-      'Expand on the emotional journey of the main character'
+      'Consider adding more sensory details',
+      'Expand on the character motivations',
+      'Add more dialogue to show character interactions'
     ]
   },
   enhance: {
-    enhancedContent: 'This is an enhanced version of your story with improved flow and added details.'
+    enhancedContent: 'This is an enhanced version of your story with improved clarity and flow.'
   },
-  generateTitle: {
-    title: 'A Compelling Story Title'
-  },
-  analyzeWithCore: {
-    emotional_tone: 'The story has a generally positive and uplifting emotional tone with moments of tension and resolution.',
-    key_themes: 'Themes of personal growth, overcoming challenges, and self-discovery are present throughout the narrative.',
-    readability: 'The story is well-written with good sentence structure and vocabulary, suitable for a general audience.',
-    sentiment_score: 8,
-    // Keeping these for backward compatibility
-    emotionalArc: 'The story has a positive emotional arc with a clear beginning, middle, and end.',
-    keyElements: [
-      'Clear protagonist with defined goals',
-      'Challenges that create tension',
-      'Satisfying resolution'
-    ],
-    suggestions: [
-      'Add more sensory details to enhance immersion',
-      'Consider varying sentence structure for better flow',
-      'Expand on the emotional journey of the main character'
-    ],
-    coreMoment: 'The turning point where the protagonist overcomes their main challenge',
-    structure: 'Classic three-act structure with clear setup, confrontation, and resolution',
-    transformation: 'The protagonist grows from uncertainty to confidence'
-  }
+  title: 'Generated Story Title'
 };
 
 // Check if we're in development mode
@@ -156,22 +111,7 @@ export const aiService = {
     }
 
     try {
-      console.log('Sending request for story analysis...');
-      
-      // Get user's selected model and provider from settings
-      const settings = await getAIModelSettings();
-      if (!settings) {
-        throw new Error('AI model settings not found. Please configure your AI model in settings.');
-      }
-      
-      const { model_name: model, provider } = settings;
-      
-      if (!model) {
-        throw new Error('No AI model selected. Please select a model in settings.');
-      }
-      
-      console.log(`Using ${provider} model: ${model}`);
-      
+      console.log('Sending request to Ollama for analysis...');
       const prompt = `Analyze this story and provide key insights about its structure, themes, and emotional impact. 
 Focus on identifying the core message, emotional arc, and key elements that make the story compelling. 
 Return your analysis in a structured format with clear sections. Do not include any thinking process or analysis in the response.
@@ -179,37 +119,16 @@ Return your analysis in a structured format with clear sections. Do not include 
 ${content}`;
       
       console.log('=== ANALYSIS REQUEST ===');
-      console.log('Provider:', provider);
-      console.log('Model:', model);
       console.log('Prompt length:', prompt.length);
       
-      // Use the appropriate API based on the provider
-      const api = provider === 'ollama' ? ollamaAxios : axios.create({
-        baseURL: API_URL,
-        timeout: OLLAMA_TIMEOUT,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': settings.api_key ? `Bearer ${settings.api_key}` : undefined,
+      const response = await ollamaAxios.post('/generate', {
+        model: 'qwen3:1.7b',
+        prompt: prompt,
+        stream: false,
+        options: {
+          temperature: 0.7,
         },
       });
-      
-      const endpoint = provider === 'ollama' ? '/generate' : '/api/v1/ai/analyze';
-      
-      const requestData = provider === 'ollama' 
-        ? {
-            model,
-            prompt,
-            stream: false,
-            options: {
-              temperature: 0.7,
-            },
-          }
-        : {
-            content,
-            model_name: model,
-          };
-      
-      const response = await api.post(endpoint, requestData);
 
       // Log the raw response for debugging
       console.log('Raw analysis response:', response.data);
@@ -226,12 +145,7 @@ ${content}`;
       console.log('===============================');
       
       // Parse the cleaned response
-      const result: AIAnalysisResponse = {
-        emotional_tone: extractSection(analysisText, 'Emotional Tone') || 'Neutral',
-        key_themes: extractSection(analysisText, 'Key Themes') || 'No key themes identified',
-        readability: extractSection(analysisText, 'Readability') || 'Standard',
-        sentiment_score: parseFloat(extractSection(analysisText, 'Sentiment Score') || '5'),
-        // Keep old fields for backward compatibility
+      const result = {
         emotionalArc: extractSection(analysisText, 'Emotional Arc'),
         keyElements: extractList(analysisText, 'Key Elements'),
         suggestions: extractList(analysisText, 'Suggestions'),
@@ -316,7 +230,7 @@ Do not include any tags like <think> or any other markdown. Just return the enha
   generateTitle: async (content: string): Promise<string> => {
     if (useMockAI) {
       console.log('Using mock title generation');
-      return MOCK_AI_RESPONSES.generateTitle.title;
+      return MOCK_AI_RESPONSES.title;
     }
 
     try {
@@ -387,7 +301,7 @@ Do not use quotes, periods, or any other punctuation.\n\n${content}`;
       console.error('Error in generateTitle:', error);
       if (isDevelopment) {
         console.log('Falling back to mock data');
-        return MOCK_AI_RESPONSES.generateTitle.title;
+        return MOCK_AI_RESPONSES.title;
       }
       throw new Error('Failed to generate title. Please try again later.');
     }

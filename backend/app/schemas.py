@@ -2,9 +2,6 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
-# Re-export AI model schemas for backward compatibility
-from .ai_model import AIModelBase, AIModelCreate, AIModelUpdate, AIModel
-
 # Shared properties
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
@@ -80,5 +77,3 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: Optional[int] = None
-
-# AI Model schemas are now in ai_model.py

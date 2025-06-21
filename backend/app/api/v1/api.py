@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from .endpoints import auth, users, stories, ai_model
+from .endpoints import auth, users, stories
 
 api_router = APIRouter()
 
@@ -18,4 +18,3 @@ async def health_check():
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(stories.router, prefix="/stories", tags=["stories"])
-api_router.include_router(ai_model.router, prefix="/ai-model", tags=["ai-model"])

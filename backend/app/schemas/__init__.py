@@ -12,14 +12,6 @@ from .auth import (
     User
 )
 
-# Import AI model schemas
-from .ai_model import (
-    AIModelBase,
-    AIModelCreate,
-    AIModelUpdate,
-    AIModel
-)
-
 # Then import story schemas
 from .story import (
     StoryBase,

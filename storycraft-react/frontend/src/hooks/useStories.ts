@@ -1,12 +1,11 @@
 import { Story } from '@/types/story';
-import { StoryFilters } from '@/types/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { storyApi } from '../services/storyApi';
 
-export const useStories = (filters: StoryFilters = {}) => {
+export const useStories = () => {
   return useQuery<Story[]>({
-    queryKey: ['stories', filters],
-    queryFn: () => storyApi.getStories(filters),
+    queryKey: ['stories'],
+    queryFn: storyApi.getStories,
   });
 };
 

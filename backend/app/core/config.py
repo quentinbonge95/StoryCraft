@@ -52,18 +52,6 @@ class Settings(BaseSettings):
     
     # API Documentation
     OPENAPI_URL: Optional[str] = "/openapi.json"
-
-    # AI Model Settings
-    # Default model to use as fallback if user hasn't configured one
-    # This should be a model that's expected to be available in the default Ollama setup
-    DEFAULT_AI_MODEL: str = Field(
-        "llama3",
-        description="Default model to use if user hasn't configured one"
-    )
-    OLLAMA_HOST: str = Field(
-        "http://host.docker.internal:11434",
-        description="Ollama server URL. When running locally on Mac, use 'http://host.docker.internal:11434'"
-    )
     
     class Config:
         case_sensitive = True
