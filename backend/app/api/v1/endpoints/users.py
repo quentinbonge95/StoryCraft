@@ -98,7 +98,9 @@ async def update_user_me(
     - **full_name**: User's full name
     """
     # Log the update attempt
-    logger.info(f"Updating user {current_user.id} with data: {user_in.dict(exclude_unset=True)}")
+    logger.info(
+        f"Updating user {current_user.id} with data: {user_in.model_dump(exclude_unset=True)}"
+    )
     
     # Update the user
     user = crud_user.update_user(db, user_id=current_user.id, user_update=user_in)
