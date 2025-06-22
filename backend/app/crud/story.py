@@ -62,7 +62,7 @@ def update_story(
     if db_story is None:
         return None
 
-    update_data = story.dict(exclude_unset=True)
+    update_data = story.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_story, field, value)
 

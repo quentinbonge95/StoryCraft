@@ -63,7 +63,7 @@ def update_user(
         return None
     
     # Convert the update data to a dictionary, excluding unset fields
-    update_data = user_update.dict(exclude_unset=True)
+    update_data = user_update.model_dump(exclude_unset=True)
     
     # Handle password update if provided
     if "password" in update_data and update_data["password"]:
