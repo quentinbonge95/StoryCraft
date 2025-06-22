@@ -1,0 +1,11 @@
+# Ignore environment files
+backend/.env
+
+# Ignore local databases and backups
+*.db
+*.sql
+storycraft.db.backup
+
+# Node and Python artifacts
+node_modules
+__pycache__/

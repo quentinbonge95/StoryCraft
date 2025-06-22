@@ -37,39 +37,23 @@ async def read_user_me(
     Returns the currently authenticated user's information.
     """
     try:
-        logger.info(f"[DEBUG] /users/me - Fetching user data for user_id: {current_user.id}")
+        logger.debug("Fetching data for current user")
         
         # Get fresh user data from the database
         db_user = crud_user.get_user(db, user_id=current_user.id)
         if not db_user:
-            logger.error(f"[ERROR] /users/me - User not found in database: {current_user.id}")
+            logger.warning("User not found in database")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
+
+        logger.debug("Successfully fetched user data")
         
-        # Convert to dict to log the actual data
-        user_dict = {
-            'id': db_user.id,
-            'email': db_user.email,
-            'full_name': db_user.full_name,
-            'is_active': db_user.is_active,
-            'is_superuser': db_user.is_superuser,
-            'created_at': db_user.created_at.isoformat() if db_user.created_at else None,
-            'updated_at': db_user.updated_at.isoformat() if db_user.updated_at else None
-        }
-        
-        logger.info(f"[DEBUG] /users/me - User data to return: {user_dict}")
-        
-        # Log the raw SQL query being executed
-        logger.info(f"[DEBUG] /users/me - Raw SQL: {str(db.query(models.User).filter(models.User.id == current_user.id))}")
-        
-        # Log the actual database response
-        logger.info(f"[DEBUG] /users/me - Raw DB response: {db_user.__dict__}")
         
         # Convert SQLAlchemy model to Pydantic model
         user_schema = schemas.User.from_orm(db_user)
-        logger.info(f"Successfully fetched user data for: {db_user.email}")
+        logger.info(f"User data retrieved for: {db_user.email}")
         
         return user_schema
         

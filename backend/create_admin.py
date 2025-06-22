@@ -44,6 +44,10 @@ def create_admin_user(email: str, password: str, full_name: str = "Admin User"):
         db.close()
 
 if __name__ == "__main__":
-    email = "Admin@example.com"
-    password = "Afp0910!"
+    email = os.getenv("ADMIN_EMAIL")
+    password = os.getenv("ADMIN_PASSWORD")
+
+    if not email or not password:
+        raise SystemExit("ADMIN_EMAIL and ADMIN_PASSWORD environment variables must be set")
+
     create_admin_user(email, password)
